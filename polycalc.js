@@ -100,7 +100,6 @@ if ( ! window.jQuery || ! CSSParser) {
 							elements.each(function() {
 								var newValue = parseExpression(propertyValue, valueValue, $(this)) + "px";
 								$(this).css(propertyValue, newValue);
-								alert(propertyValue + ': ' + newValue);
 							});
 						}
 
