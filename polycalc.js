@@ -1,4 +1,4 @@
-if(!jQuery || !CSSParser) {
+if ( ! window.jQuery || ! CSSParser) {
 	alert("PolyCalc requires jQuery and JSCSSP to function. Disabling.");
 } else {
 	if(typeof String.prototype.startsWith != 'function') {
@@ -8,10 +8,13 @@ if(!jQuery || !CSSParser) {
 	}
 	
 	$(document).ready(function() {
+
 		window.PolyCalc = new function() {
+
 			this.abort = false;
 			
 			this.initiate = function() {
+
 				var parser = new CSSParser();
 				var styleSheets = $("style");
 				
@@ -19,6 +22,7 @@ if(!jQuery || !CSSParser) {
 					parseStyleSheet(parser, $(this).html());
 				});
 				
+				// Stylesheets...
 				styleSheets = $("link[rel='stylesheet']");
 				styleSheets.each(function() {
 					$.get($(this).attr("href"), function(data){
@@ -26,13 +30,15 @@ if(!jQuery || !CSSParser) {
 					});
 				});
 				
+				// Inline styles...
 				// Do not use inline styles if you are building for Internet Explorer!
 				$("*").each(function() { // $("[style*='calc(']"); fails for Chrome
 					if($(this).attr("style") === undefined)
 						return;
-						
-					if($(this).attr("style").indexOf("calc(") != -1)
+
+					if(($(this).attr("style").indexOf("calc(") !== -1) && ($(this).attr("style").indexOf("-calc(") === -1)) {
 						parseInline(parser, $(this));
+					}
 				});
 			}
 			
@@ -63,10 +69,12 @@ if(!jQuery || !CSSParser) {
 			var parseSelector = function(selector) {
 				var properties = selector.declarations;
 				
-				for(var i = 0; i < properties.length; ++i) {
-					var property = properties[i];
-					
-					parseProperty(selector, property, false);
+				if (properties !== undefined) {
+					for(var i = 0; i < properties.length; ++i) {
+						var property = properties[i];
+						
+						parseProperty(selector, property, false);
+					}
 				}
 			}
 			
@@ -74,15 +82,15 @@ if(!jQuery || !CSSParser) {
 				var values = property.values;
 				for(var i = 0; i < values.length; ++i) {
 					var value = values[i];
-					
-					if(!elementKnown)
+
+					if( ! elementKnown)
 						var selectorValue = selector.selectorText();
 						
 					var propertyValue = property.property;
 					var valueValue = value.value;
-					
-					if(valueValue.indexOf("calc(") !== -1) {
-						if(elementKnown) {
+
+					if ((valueValue.indexOf("calc(") !== -1) && (valueValue.indexOf("-calc(") === -1)) {
+						if (elementKnown) {
 							elements = selector;
 						} else {
 							elements = $(selectorValue);
@@ -92,9 +100,11 @@ if(!jQuery || !CSSParser) {
 							elements.each(function() {
 								var newValue = parseExpression(propertyValue, valueValue, $(this)) + "px";
 								$(this).css(propertyValue, newValue);
+								alert(propertyValue + ': ' + newValue);
 							});
 						}
-						
+
+						// re-calculate calc() on load and window resize events
 						$(window).resize(update);
 						update();
 					}
@@ -102,8 +112,13 @@ if(!jQuery || !CSSParser) {
 			}
 			
 			var parseExpression = function(propertyValue, expression, element) {
+
 				var newExpression = "";
-				expression = expression.match(/^calc\((.+)\)$/)[1];
+
+				regex = expression.match(/^calc\((.+)\)$/);
+				if (regex !== null) {
+					expression = expression.match(/^calc\((.+)\)$/)[1];
+				}
 				
 				var value = -1;
 				for(var i = 0; i < expression.length; ++i) {
@@ -119,9 +134,9 @@ if(!jQuery || !CSSParser) {
 					}
 					
 					regex = substr.match(/^([A-Za-z]+|%)/);
-					if(regex !== null) {
+					if (regex !== null) {
 						value = convertUnit(regex[1], "px", value, propertyValue, element);
-						if(value !== -1)
+						if (value !== -1)
 							newExpression += value;
 							
 						i += regex[1].length - 1;
@@ -132,12 +147,12 @@ if(!jQuery || !CSSParser) {
 					
 					var char = expression.charAt(i);
 					
-					if(char == '+' || char == '-' || char == '*' || char == '/' || char == '(' || char == ')') {
+					if(char === '+' || char === '-' || char === '*' || char === '/' || char === '(' || char === ')') {
 						newExpression += char;
 						value = -1;
 					}
 				}
-				
+
 				return eval(newExpression);
 			}
 			
