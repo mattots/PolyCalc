@@ -67,10 +67,13 @@ if ( ! window.jQuery || ! CSSParser) {
 			var parseStyleSheet = function(parser, source) {
 				var styleSheet = parser.parse(source, false, false);
 
-				var selectors = styleSheet.cssRules;
+				if (styleSheet.cssRules) {
+					var selectors = styleSheet.cssRules;
+				} else { // IE8 and below
+					var selectors = styleSheet.rules;
+				}
 				for(var i = 0; i < selectors.length; ++i) {
 					var selector = selectors[i];
-					
 					parseSelector(selector, false);
 				}
 			}
@@ -81,7 +84,11 @@ if ( ! window.jQuery || ! CSSParser) {
 				var style = parser.parse(source, false, false);
 				
 				// get properties
-				var properties = style.cssRules[0].declarations;				
+				if (style.cssRules) {
+					var properties = style.cssRules[0].declarations;
+				} else { // IE8 and below
+					var properties = style.rules[0].declarations;
+				}
 				for(var i = 0; i < properties.length; ++i) {
 					var property = properties[i];
 					
